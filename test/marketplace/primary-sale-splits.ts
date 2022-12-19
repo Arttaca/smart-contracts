@@ -1,4 +1,4 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { BigNumber } from "ethers";
 import { deployMarketplace } from "./util/fixtures";
@@ -11,7 +11,7 @@ const split1Fee = 2500;
 const split2Fee = 2500;
 const protocolFee = 300;
 const royaltiesFee = 1000; // 10%
-const TOKEN_ID = 3;
+const TOKEN_ID = BigNumber.from(3);
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
 let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
@@ -21,11 +21,11 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2 } = await loadFixture(deployMarketplace));
       splits = [
-        [minter.address, minterFee],
-        [split1.address, split1Fee],
-        [split2.address, split2Fee]
+          {account: minter.address, shares: minterFee},
+          {account: split1.address, shares: split1Fee},
+          {account: split2.address, shares: split2Fee},
       ];
-      royalties = [splits, royaltiesFee]
+      royalties = {splits, percentage: royaltiesFee}
       timestamp = await getLastBlockTimestamp();
       expTimestamp = timestamp + 100;
       listingExpTimestamp = expTimestamp + 100;
@@ -41,6 +41,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
       listingSignature = await createSaleSignature(
         collection.address,
         minter,
+          marketplace.address,
         TOKEN_ID,
         PRICE,
         listingExpTimestamp
@@ -48,6 +49,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
       nodeSignature = await createSaleSignature(
         collection.address,
         operator,
+          marketplace.address,
         TOKEN_ID,
         PRICE,
         nodeExpTimestamp
@@ -83,7 +85,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
 
   //   const tx = await marketplace.connect(user).buyAndMint(
   //     collection.address,
-  //     tokenData, 
+  //     tokenData,
   //     mintData,
   //     saleData,
   //     {value: PRICE}
@@ -127,16 +129,12 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
 
     const tx = await marketplace.connect(user).buyAndMint(
       collection.address,
-      tokenData, 
+      tokenData,
       mintData,
       saleData,
       {value: PRICE}
     );
     await tx.wait();
-
-    const minterBalanceAfter = await minter.getBalance();
-    const split1BalanceAfter = await split1.getBalance();
-    const split2BalanceAfter = await split2.getBalance();
 
     const userBalanceDiff = (await user.getBalance()).sub(userBalanceBefore);
     const protocolBalanceDiff = (await protocol.getBalance()).sub(protocolBalanceBefore);
@@ -156,13 +154,13 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
   });
 
   it("splits with wrong number of shares should fail", async function () {
-    const wrongSplits = [  
-      [minter.address, 3000],
-      [split1.address, 2000],
-      [split2.address, 2000]
+    const wrongSplits = [
+        {account: minter.address, shares: 3000},
+        {account: split1.address, shares: 2000},
+        {account: split2.address, shares: 2000}
     ];
 
-    royalties = [wrongSplits, royaltiesFee]
+    royalties = {splits: wrongSplits, percentage: royaltiesFee}
 
     mintSignature = await createMintSignature(
       collection.address,
@@ -179,7 +177,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
     await expect(
       marketplace.connect(user).buyAndMint(
         collection.address,
-        tokenData, 
+        tokenData,
         mintData,
         saleData,
         {value: PRICE}

@@ -1,6 +1,5 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { deployCollection } from "./util/fixtures";
 import { createMintSignature } from "../../common/utils/signature";
@@ -8,14 +7,14 @@ import { getLastBlockTimestamp } from "../../common/utils/time";
 
 describe("ArttacaERC721Upgradeable minting", function () {
   let collection, owner, user, factory, splits, royalties;
-  const TOKEN_ID = 3;
+  const TOKEN_ID = BigNumber.from(3);
   const tokenURI = 'ipfs://123123';
   const royaltiesFee = 1000;
   const splitShares = 10000;
   beforeEach(async () => {
     ({ collection, owner, user, factory } = await loadFixture(deployCollection));
-    splits = [[owner.address, splitShares]];
-    royalties = [splits, royaltiesFee]
+    splits = [{account: owner.address, shares: splitShares}];
+    royalties = {splits, percentage: royaltiesFee}
   });
 
   it("Owner should mint", async function () {
@@ -79,7 +78,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 	  const timestamp = await getLastBlockTimestamp();
     const expTimestamp = timestamp + 100;
     const wrongTokenId = 5;
-	
+
 	  const wrongMintSignature = await createMintSignature(
 	    collection.address,
       owner,
@@ -114,7 +113,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
 	  const timestamp = await getLastBlockTimestamp();
     const pastExpTimestamp = timestamp - 100;
-	
+
 	  const expiredMintSignature = await createMintSignature(
 	    collection.address,
       owner,

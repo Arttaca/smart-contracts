@@ -1,10 +1,11 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { deployMarketplace } from "./util/fixtures";
 import { getLastBlockTimestamp } from "../common/utils/time";
-import { createMintSignature, createSaleSignature } from "../common/utils/signature";
+import { createSaleSignature } from "../common/utils/signature";
+import {BigNumber} from "ethers";
 
-const TOKEN_ID = 3;
+const TOKEN_ID = BigNumber.from(3);
 const royaltiesFee = 1000;
 const splitShares = 10000;
 const tokenURI = 'ipfs://123123';
@@ -31,6 +32,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
       listingSignature = await createSaleSignature(
         collection.address,
         owner,
+        marketplace.address,
         TOKEN_ID,
         PRICE,
         listingExpTimestamp
@@ -38,6 +40,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
       nodeSignature = await createSaleSignature(
         collection.address,
         operator,
+          marketplace.address,
         TOKEN_ID,
         PRICE,
         nodeExpTimestamp
@@ -52,7 +55,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
 
     const tx = await marketplace.connect(user).buyAndTransfer(
       collection.address,
-      tokenData, 
+      tokenData,
       saleData,
       {value: PRICE}
     );
@@ -68,11 +71,11 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
     await expect(
       marketplace.connect(user).buyAndTransfer(
         collection.address,
-        tokenData, 
+        tokenData,
         saleData,
         {value: PRICE}
       )
-    ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'ERC721: caller is not token owner nor approved'");
+    ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'ERC721: caller is not token owner or approved'");
 
     expect((await collection.tokensOfOwner(user.address)).length).to.equal(0);
   });
@@ -84,7 +87,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
     await expect(
       marketplace.connect(user).buyAndTransfer(
         collection.address,
-        tokenData, 
+        tokenData,
         saleData,
         {value: WRONG_PRICE}
       )
@@ -103,6 +106,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
     const expiredListingSignature = await createSaleSignature(
       collection.address,
       owner,
+      marketplace.address,
       TOKEN_ID,
       PRICE,
       expiredTimestamp
@@ -113,7 +117,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
     await expect(
       marketplace.connect(user).buyAndTransfer(
         collection.address,
-        tokenData, 
+        tokenData,
         saleData,
         {value: PRICE}
       )
@@ -130,6 +134,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
     const wrongOperatorSignature = await createSaleSignature(
       collection.address,
       user,
+        marketplace.address,
       TOKEN_ID,
       PRICE,
       expTimestamp
@@ -140,7 +145,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
     await expect(
       marketplace.connect(user).buyAndTransfer(
         collection.address,
-        tokenData, 
+        tokenData,
         saleData,
         {value: PRICE}
       )

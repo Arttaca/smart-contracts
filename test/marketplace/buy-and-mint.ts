@@ -1,14 +1,15 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { deployMarketplace } from "./util/fixtures";
 import { getLastBlockTimestamp } from "../common/utils/time";
 import { createMintSignature, createSaleSignature } from "../common/utils/signature";
+import {BigNumber} from "@ethersproject/bignumber";
 
 const feeDenominator = 10000;
 const protocolFee = 300;
 const royaltiesFee = 1000;
 const splitShares = 10000;
-const TOKEN_ID = 3;
+const TOKEN_ID = BigNumber.from(3);
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
 let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
@@ -17,8 +18,8 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
   let factory, erc721, owner, user , collection, marketplace, operator, protocol;
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator, protocol } = await loadFixture(deployMarketplace));
-      splits = [[owner.address, splitShares]];
-      royalties = [splits, royaltiesFee]
+      splits = [{account: owner.address, shares: splitShares}];
+      royalties = {splits, percentage: royaltiesFee}
       tokenData = [
         TOKEN_ID,
         tokenURI,
@@ -39,6 +40,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       listingSignature = await createSaleSignature(
         collection.address,
         owner,
+        marketplace.address,
         TOKEN_ID,
         PRICE,
         listingExpTimestamp
@@ -46,6 +48,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       nodeSignature = await createSaleSignature(
         collection.address,
         operator,
+        marketplace.address,
         TOKEN_ID,
         PRICE,
         nodeExpTimestamp
@@ -62,7 +65,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
 
     const tx = await marketplace.connect(user).buyAndMint(
       collection.address,
-      tokenData, 
+      tokenData,
       mintData,
       saleData,
       {value: PRICE}
@@ -86,7 +89,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     await expect(
       marketplace.connect(user).buyAndMint(
         collection.address,
-        tokenData, 
+        tokenData,
         mintData,
         saleData,
         {value: WRONG_PRICE}
@@ -104,6 +107,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     listingSignature = await createSaleSignature(
       collection.address,
       owner,
+        marketplace.address,
       TOKEN_ID,
       PRICE,
       expiredTimestamp
@@ -115,7 +119,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     await expect(
       marketplace.connect(user).buyAndMint(
         collection.address,
-        tokenData, 
+        tokenData,
         mintData,
         wrongExpiredTimeStampSaleData,
         {value: PRICE}
@@ -128,7 +132,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     await expect(
       marketplace.connect(user).buyAndMint(
         collection.address,
-        tokenData, 
+        tokenData,
         mintData,
         wrongListingSignatureSaleData,
         {value: PRICE}
@@ -144,6 +148,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     const wrongOperatorSignature = await createSaleSignature(
       collection.address,
       user,
+        marketplace.address,
       TOKEN_ID,
       PRICE,
       expTimestamp
@@ -154,7 +159,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     await expect(
       marketplace.connect(user).buyAndMint(
         collection.address,
-        tokenData, 
+        tokenData,
         mintData,
         saleData,
         {value: PRICE}

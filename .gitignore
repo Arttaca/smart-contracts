@@ -32,3 +32,5 @@ artifacts
 .DS_Store
 
 remix-slither-report.json
+
+.idea

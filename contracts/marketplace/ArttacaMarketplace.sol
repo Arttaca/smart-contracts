@@ -5,6 +5,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "../access/OperableUpgradeable.sol";
@@ -25,7 +26,7 @@ interface ERC721 {
 
  * @dev This contract 
  */
-contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, OperableUpgradeable {
+contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, OperableUpgradeable, EIP712Upgradeable {
 
     // @dev Recipient of protocol fees.
     Ownership.Split protocolFee;
@@ -34,6 +35,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         address owner,
         Ownership.Split memory _protocolFee
     ) external initializer {
+        __EIP712_init("Arttaca Marketplace", "1");
         __OperableUpgradeable_init(owner);
         _addOperator(owner);
 
@@ -127,17 +129,17 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
         
         require(
-            _verifySignature(
-                Marketplace.hashListing(collectionAddress, _tokenData, _saleData, false),
-                listingSigner,
+            ECDSAUpgradeable.recover(
+                _hashTypedDataV4(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, false)),
                 _saleData.listingSignature
-            ),
+            ) == listingSigner,
             "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is not valid."
         );
 
-        bytes32 messageHash = keccak256(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, true));
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        address nodeSignerRecovered = recoverSigner(ethSignedMessageHash, slice(_saleData.nodeSignature, 0, 65));
+        address nodeSignerRecovered = ECDSAUpgradeable.recover(
+            _hashTypedDataV4(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, true)),
+            _saleData.nodeSignature
+        );
 
         require(
             isOperator(nodeSignerRecovered),

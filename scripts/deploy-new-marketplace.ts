@@ -7,6 +7,7 @@ async function main() {
   const ArttacaMarketplaceUpgradeable = await ethers.getContractFactory("ArttacaMarketplaceUpgradeable");
   
   const factory = await ethers.getContractAt("ArttacaERC721FactoryUpgradeable", factoryAddress);
+  console.log('Factory has been loaded at ', factoryAddress);
 
   const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, [process.env.DEPLOYER_ADDRESS, [process.env.DEPLOYER_ADDRESS, 300]], { initializer: '__ArttacaMarketplace_init' });
 

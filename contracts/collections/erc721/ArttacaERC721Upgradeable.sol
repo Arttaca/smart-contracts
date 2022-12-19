@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 
 import "../../splits/AbstractSplitsUpgradeable.sol";
 import "../../utils/VerifySignature.sol";
@@ -21,7 +22,7 @@ interface Operatable {
  * @title ArttacaERC721Upgradeable
  * @dev This contract is an Arttaca ERC721 upgradeable collection.
  */
-contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ArttacaERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, AbstractSplitsUpgradeable, IArttacaERC721Upgradeable {
+contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ArttacaERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, AbstractSplitsUpgradeable, IArttacaERC721Upgradeable, EIP712Upgradeable {
 
     address public factoryAddress;
 
@@ -34,6 +35,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         uint96 _royaltyPct
     ) external initializer {
         __ERC721_init(_name, _symbol);
+        __EIP712_init("Arttaca721", "1");
         __Ownable_init();
         __Pausable_init();
         __ERC721Burnable_init();
@@ -57,11 +59,10 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         require(Operatable(factoryAddress).isOperator(msg.sender), "ArttacaERC721Upgradeable:mintAndTransfer:: Caller is not a valid factory operator.");
         require(block.timestamp <= _mintData.expTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
         require(
-            _verifySignature(
-                Marketplace.hashMint(address(this), _tokenData, _mintData),
-                owner(),
+            ECDSAUpgradeable.recover(
+                _hashTypedDataV4(Marketplace.hashMint(address(this), _tokenData, _mintData)),
                 _mintData.signature
-            ),
+            ) == owner(),
             "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
         );
         _mint(_mintData.to, _tokenData.id);
@@ -130,9 +131,10 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
     function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 batchSize
     ) internal virtual override(ERC721Upgradeable, ERC721PausableUpgradeable, ERC721EnumerableUpgradeable) {
-        super._beforeTokenTransfer(from, to, tokenId);
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     uint256[50] private __gap;
