@@ -1,11 +1,10 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { deployCollectionMinted } from "./util/fixtures";
 
 describe("ArttacaERC721Upgradeable metadata", function () {
   let collection, owner, user, tokenId;
   const NEW_BASE_URI = 'ipfs://';
-  const NEW_TOKEN_URI = 'ipfs://123';
   const TOKEN_URI = "3jASDHFASDFKJHASDFKHJ"
   beforeEach(async () => {
       ({ collection, owner, user, tokenId } = await loadFixture(deployCollectionMinted));
@@ -40,7 +39,7 @@ describe("ArttacaERC721Upgradeable metadata", function () {
     expect(await collection.baseURI()).to.equal("");
   });
 
-  it("Non-owner can't set new base URI", async function () {    
+  it("Non-owner can't set new base URI", async function () {
     await expect(
       collection.connect(user).setBaseURI(NEW_BASE_URI)
     ).to.be.rejectedWith(

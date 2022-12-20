@@ -22,13 +22,12 @@ contract ArttacaERC1155Factory is Ownable {
     /**
      * @dev Emitted when a new ArttacaERC1155 contract is created.
      */
-    event Arrtaca721Created(
+    event Arrtaca1155Created(
         address indexed collectionAddress,
         address indexed owner,
         string name,
         string symbol,
-        address[] splits,
-        uint[] shares
+        uint royaltyPercentage
     );
 
     constructor(address _initBlueprint) {
@@ -38,32 +37,30 @@ contract ArttacaERC1155Factory is Ownable {
     function createCollection(
         string memory _name,
         string memory _symbol,
-        address[] memory _splits,
-        uint[] memory _shares
+        uint royaltyPercentage
     ) external onlyOwner returns (address) {
 
         BeaconProxy collection = new BeaconProxy(
             address(beacon),
             abi.encodeWithSelector(
                 ArttacaERC1155Upgradeable(address(0)).__ArttacaERC1155_initialize.selector,
+                address(this),
                 msg.sender,
                 _name,
                 _symbol,
-                _splits,
-                _shares
+                royaltyPercentage
             )
         );
         address newCollectionAddress = address(collection);
         collections[collectionsCount] = newCollectionAddress;
         collectionsCount++;
 
-        emit Arrtaca721Created(
+        emit Arrtaca1155Created(
             newCollectionAddress,
             _msgSender(),
             _name,
             _symbol,
-            _splits,
-            _shares
+            royaltyPercentage
         );
 
         return newCollectionAddress;
@@ -80,4 +77,6 @@ contract ArttacaERC1155Factory is Ownable {
     function getImplementation() public view returns (address) {
         return beacon.implementation();
     }
+
+    uint256[50] private __gap;
 }

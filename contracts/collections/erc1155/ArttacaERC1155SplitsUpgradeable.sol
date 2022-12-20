@@ -12,11 +12,11 @@ import "../../lib/Ownership.sol";
 
 /**
  * @title Arttaca ERC721 Splits logic
- * 
+ *
  * @dev Basic splits definition for Arttaca collections.
  */
 abstract contract ArttacaERC1155SplitsUpgradeable is IERC2981Upgradeable, ERC1155SupplyUpgradeable, OwnableUpgradeable {
-    
+
     uint96 internal feeNumerator;
     mapping(uint => Ownership.Royalties) internal tokenRoyalties;
 
@@ -30,7 +30,7 @@ abstract contract ArttacaERC1155SplitsUpgradeable is IERC2981Upgradeable, ERC115
 
     function royaltyInfo(uint _tokenId, uint _salePrice) external view virtual override returns (address, uint) {
         require(exists(_tokenId), "ArttacaERC1155SplitsUpgradeable::royaltyInfo: token has not been minted.");
-        uint royaltyAmount = (_salePrice * feeNumerator) / _feeDenominator();
+        uint royaltyAmount = (_salePrice * feeNumerator * 100) / _feeDenominator();
 
         return (owner(), royaltyAmount);
     }
@@ -57,7 +57,7 @@ abstract contract ArttacaERC1155SplitsUpgradeable is IERC2981Upgradeable, ERC115
             require(_splits[i].shares > 0, "ArttacaERC1155SplitsUpgradeable::_checkSplits: Shares value must be greater than 0.");
             totalShares += _splits[i].shares;
         }
-        return totalShares == _feeDenominator();
+        return totalShares == _maxShares();
     }
 
     function getBaseRoyalty() external view returns (Ownership.Split memory) {
@@ -67,6 +67,10 @@ abstract contract ArttacaERC1155SplitsUpgradeable is IERC2981Upgradeable, ERC115
     function _setDefaultRoyalty(uint96 _feeNumerator) internal virtual {
         require(_feeNumerator <= _feeDenominator(), "ArttacaERC1155SplitsUpgradeable::_setDefaultRoyalty: Royalty fee must be lower than fee denominator.");
         feeNumerator = _feeNumerator;
+    }
+
+    function _maxShares() internal pure virtual returns (uint96) {
+        return 100;
     }
 
     function _feeDenominator() internal pure virtual returns (uint96) {

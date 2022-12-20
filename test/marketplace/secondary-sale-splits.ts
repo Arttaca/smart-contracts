@@ -8,11 +8,8 @@ import { createMintSignature, createSaleSignature } from "../common/utils/signat
 const ONE = BigNumber.from(1)
 
 const feeDenominator = 10000;
-const minterFee = 5000;
-const split1Fee = 2500;
-const split2Fee = 2500;
-const protocolFee = 300;
-const royaltiesFee = 1000; // 10%
+const protocolFee = 3;
+const royaltiesFee = 10; // 10%
 const TOKEN_ID =  BigNumber.from(3);
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
@@ -22,7 +19,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
   let factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2, buyer1;
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2, buyer1 } = await loadFixture(deployMarketplace));
-      splits = [{account: minter.address, shares: feeDenominator}];
+      splits = [{account: minter.address, shares: 100}];
       royalties = {splits, percentage: royaltiesFee}
       timestamp = await getLastBlockTimestamp();
       expTimestamp = timestamp + 100;
@@ -42,9 +39,9 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
 
     const priceBigNumber = BigNumber.from(PRICE);
 
-    const expectedProtocolFee = priceBigNumber.mul(protocolFee).div(feeDenominator);
+    const expectedProtocolFee = priceBigNumber.mul(protocolFee * 100).div(feeDenominator);
     const amountToSplit = priceBigNumber.sub(expectedProtocolFee)
-    const expectedMinterFee = amountToSplit.mul(royaltiesFee).div(feeDenominator);
+    const expectedMinterFee = amountToSplit.mul(royaltiesFee * 100).div(feeDenominator);
     const expectedSellerFee = amountToSplit.sub(expectedMinterFee);
 
     const userBalanceBefore = await user.getBalance();
@@ -104,9 +101,9 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
 
     const priceBigNumber = BigNumber.from(PRICE);
 
-    const expectedProtocolFee = priceBigNumber.mul(protocolFee).div(feeDenominator);
+    const expectedProtocolFee = priceBigNumber.mul(protocolFee * 100).div(feeDenominator);
     const amountToSplit = priceBigNumber.sub(expectedProtocolFee)
-    const expectedMinterFee = amountToSplit.mul(royaltiesFee).div(feeDenominator);
+    const expectedMinterFee = amountToSplit.mul(royaltiesFee * 100).div(feeDenominator);
     const expectedSellerFee = amountToSplit.sub(expectedMinterFee);
 
     const userBalanceBefore = await user.getBalance();

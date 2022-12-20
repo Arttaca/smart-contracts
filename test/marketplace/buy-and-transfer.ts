@@ -7,8 +7,8 @@ import {BigNumber} from "ethers";
 
 const ONE = BigNumber.from(1)
 const TOKEN_ID = BigNumber.from(3);
-const royaltiesFee = 1000;
-const splitShares = 10000;
+const royaltiesFee = 10;
+const splitShares = 100;
 const tokenURI = 'ipfs://123123';
 const PRICE = '100000000000000000'; // 0.1 ETH
 let listingSignature, nodeSignature, saleData, timestamp, listingExpTimestamp, nodeExpTimestamp, expTimestamp, tokenData, splits, royalties;
@@ -17,8 +17,8 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
   let factory, erc721, owner, user, collection, marketplace, operator;
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator } = await loadFixture(deployMarketplace));
-      splits = [[owner.address, splitShares]];
-      royalties = [splits, royaltiesFee]
+      splits = [{account: owner.address, shares:splitShares}];
+      royalties = {splits, percentage: royaltiesFee}
       tokenData = [
         TOKEN_ID,
         tokenURI,

@@ -7,11 +7,11 @@ import { createMintSignature, createSaleSignature } from "../common/utils/signat
 
 const ONE = BigNumber.from(1)
 const feeDenominator = 10000;
-const minterFee = 5000;
-const split1Fee = 2500;
-const split2Fee = 2500;
-const protocolFee = 300;
-const royaltiesFee = 1000; // 10%
+const minterFee = 50;
+const split1Fee = 25;
+const split2Fee = 25;
+const protocolFee = 3;
+const royaltiesFee = 10; // 10%
 const TOKEN_ID = BigNumber.from(3);
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
@@ -115,11 +115,11 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
 
     const priceBigNumber = BigNumber.from(PRICE);
 
-    const expectedProtocolFee = priceBigNumber.mul(protocolFee).div(feeDenominator);
+    const expectedProtocolFee = priceBigNumber.mul(protocolFee * 100).div(feeDenominator);
     const amountToSplit = priceBigNumber.sub(expectedProtocolFee);
-    const expectedMinterFee = amountToSplit.mul(minterFee).div(feeDenominator);
-    const expectedSplit1Fee = amountToSplit.mul(split1Fee).div(feeDenominator);
-    const expectedSplit2Fee = amountToSplit.mul(split2Fee).div(feeDenominator);
+    const expectedMinterFee = amountToSplit.mul(minterFee * 100).div(feeDenominator);
+    const expectedSplit1Fee = amountToSplit.mul(split1Fee * 100).div(feeDenominator);
+    const expectedSplit2Fee = amountToSplit.mul(split2Fee * 100).div(feeDenominator);
 
     const userBalanceBefore = await user.getBalance();
     const minterBalanceBefore = await minter.getBalance();
@@ -159,9 +159,9 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
 
   it("splits with wrong number of shares should fail", async function () {
     const wrongSplits = [
-        {account: minter.address, shares: 3000},
-        {account: split1.address, shares: 2000},
-        {account: split2.address, shares: 2000}
+        {account: minter.address, shares: 30},
+        {account: split1.address, shares: 20},
+        {account: split2.address, shares: 20}
     ];
 
     royalties = {splits: wrongSplits, percentage: royaltiesFee}
@@ -187,7 +187,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
         saleData,
         {value: PRICE}
       )
-    ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'AbstractSplits::_setSplits: Total shares should be equal to 10000.'");
+    ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'AbstractSplits::_setSplits: Total shares should be equal to 100.'");
 
     expect(await collection.totalSupply()).to.equal(0);
     expect((await collection.tokensOfOwner(user.address)).length).to.equal(0);

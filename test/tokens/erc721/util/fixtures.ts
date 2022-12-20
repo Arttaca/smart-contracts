@@ -1,6 +1,3 @@
-import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { expect } from "chai";
-import { BigNumber } from "ethers";
 import { ethers, upgrades } from "hardhat";
 
 async function deployFactory() {
@@ -10,7 +7,7 @@ async function deployFactory() {
   const ArttacaERC721FactoryUpgradeable = await ethers.getContractFactory("ArttacaERC721FactoryUpgradeable");
 
   const erc721 = await ArttacaERC721Upgradeable.connect(owner).deploy();
-  
+
   const factory = await upgrades.deployProxy(ArttacaERC721FactoryUpgradeable, [erc721.address], { initializer: '__ArttacaERC721Factory_initialize' });
 
   await factory.deployed()
@@ -34,8 +31,8 @@ async function deployCollectionMinted() {
   const { factory, erc721, owner, user, collection } = await deployCollection();
 
   const tokenId = 250;
-  const splits = [[owner.address, 10000]];
-  const royalties = [splits, 300]
+  const splits = [{account: owner.address, shares: 100}];
+  const royalties = {splits, percentage: 10}
   const tx = await collection.mintAndTransferByOwner(owner.address, tokenId, '', royalties);
   await tx.wait();
 

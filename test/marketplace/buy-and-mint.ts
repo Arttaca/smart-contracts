@@ -6,13 +6,11 @@ import { createMintSignature, createSaleSignature } from "../common/utils/signat
 import {BigNumber} from "@ethersproject/bignumber";
 
 const ONE = BigNumber.from(1)
-const feeDenominator = 10000;
-const protocolFee = 300;
-const royaltiesFee = 1000;
-const splitShares = 10000;
+const royaltiesFee = 10;
+const splitShares = 100;
 const TOKEN_ID = BigNumber.from(3);
 const tokenURI = 'ipfs://123123';
-const PRICE = '1000000000000000000'; // 1 ETH
+const PRICE = '10000000000000000'; // 0.01 ETH
 let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
 
 describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
@@ -21,11 +19,11 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       ({ factory, erc721, owner, user , collection, marketplace, operator, protocol } = await loadFixture(deployMarketplace));
       splits = [{account: owner.address, shares: splitShares}];
       royalties = {splits, percentage: royaltiesFee}
-      tokenData = [
-        TOKEN_ID,
-        tokenURI,
+      tokenData = {
+        id: TOKEN_ID,
+        URI:tokenURI,
         royalties
-      ]
+      }
       timestamp = await getLastBlockTimestamp();
       expTimestamp = timestamp + 100;
       listingExpTimestamp = expTimestamp + 100;
@@ -64,9 +62,6 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
 
   it("User can buy and mint", async function () {
 
-    const userBalanceBefore = await user.getBalance();
-    const protocolBalanceBefore = await protocol.getBalance();
-
     const tx = await marketplace.connect(user).buyAndMint(
       collection.address,
       tokenData,
@@ -75,11 +70,6 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       {value: PRICE}
     );
     await tx.wait();
-
-    const userBalanceAfter = await user.getBalance();
-
-    const protocolBalanceAfter = await protocol.getBalance();
-
     expect(await collection.totalSupply()).to.equal(1);
     expect((await collection.tokensOfOwner(user.address)).length).to.equal(1);
     expect((await collection.tokensOfOwner(user.address))[0]).to.equal(TOKEN_ID);
@@ -88,7 +78,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
 
   it("User cannot buy and mint if sent less ETH", async function () {
 
-    const WRONG_PRICE = '500000000000000000';
+    const WRONG_PRICE = BigNumber.from(PRICE).div(2).toString();
 
     await expect(
       marketplace.connect(user).buyAndMint(

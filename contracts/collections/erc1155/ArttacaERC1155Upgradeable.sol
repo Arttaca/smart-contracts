@@ -36,7 +36,7 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUp
     ) public initializer {
         __ERC1155_init("");
         __Ownable_init();
-        __EIP712_init("Arttaca1155", "1");
+        __EIP712_init("Arttaca Collection", "1");
         __Pausable_init();
         __ERC1155Burnable_init();
         __ERC1155Supply_init();

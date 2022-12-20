@@ -1,4 +1,4 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { deployMarketplace } from "./util/fixtures";
 
@@ -15,7 +15,7 @@ describe("ArttacaMarketplaceUpgradeable pausable", function () {
     expect(await marketplace.paused()).to.equal(true);
   });
 
-  it("Non-operator can't pause the contract", async function () {    
+  it("Non-operator can't pause the contract", async function () {
     await expect(
       marketplace.connect(user).pause()
     ).to.be.rejectedWith(
@@ -27,7 +27,7 @@ describe("ArttacaMarketplaceUpgradeable pausable", function () {
   it("Another operator can pause the contract", async function () {
     let tx = await marketplace.addOperator(user.address);
     await tx.wait();
-    
+
     tx = await marketplace.connect(user).pause()
     await tx.wait();
     expect(await marketplace.paused()).to.equal(true);

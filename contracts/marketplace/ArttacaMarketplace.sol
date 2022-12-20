@@ -24,7 +24,7 @@ interface ERC721 {
 /**
  * @title ArttacaMarketplaceUpgradeable
 
- * @dev This contract 
+ * @dev This contract
  */
 contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, OperableUpgradeable, EIP712Upgradeable {
 
@@ -43,9 +43,9 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     }
 
     function buyAndMint(
-        address collectionAddress, 
-        Marketplace.TokenData calldata _tokenData, 
-        Marketplace.MintData calldata _mintData, 
+        address collectionAddress,
+        Marketplace.TokenData calldata _tokenData,
+        Marketplace.MintData calldata _mintData,
         Marketplace.SaleData calldata _saleData
     ) external payable {
         require(!paused(), "ArttacaMarketplaceUpgradeable::buyAndMint: cannot mint and buy while is paused.");
@@ -84,7 +84,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
 
         Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
         if (!(royalties.splits[0].account == tokenOwner && royalties.splits.length == 1)) {
-            uint royaltyAmount = (saleProceedingsToSend * royalties.percentage) / _feeDenominator();
+            uint royaltyAmount = (saleProceedingsToSend * royalties.percentage * 100) / _feeDenominator();
             _distributeSplits(royalties.splits, royaltyAmount);
             saleProceedingsToSend -= royaltyAmount;
         }
@@ -109,7 +109,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     function _distributeSplits(Ownership.Split[] memory splits, uint _amountToSplit) internal {
         uint amountToSend = _amountToSplit;
         for (uint i; i < splits.length; i++) {
-            uint splitAmount = (_amountToSplit * splits[i].shares) / _feeDenominator();
+            uint splitAmount = (_amountToSplit * (splits[i].shares * 100)) / _feeDenominator();
             if(i == splits.length - 1) {
                 AddressUpgradeable.sendValue(splits[i].account, amountToSend);
             } else {
@@ -120,14 +120,14 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     }
 
     function _verifySaleSignatures(
-        Marketplace.TokenData calldata _tokenData, 
+        Marketplace.TokenData calldata _tokenData,
         Marketplace.SaleData calldata _saleData,
         address collectionAddress,
         address listingSigner
     ) internal view {
         require(block.timestamp <= _saleData.listingExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is probably expired.");
         require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
-        
+
         require(
             ECDSAUpgradeable.recover(
                 _hashTypedDataV4(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, false)),

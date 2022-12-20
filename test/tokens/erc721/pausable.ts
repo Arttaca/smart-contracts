@@ -1,4 +1,4 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { deployCollection } from "./util/fixtures";
 
@@ -15,7 +15,7 @@ describe("ArttacaERC721Upgradeable pausable", function () {
     expect(await collection.paused()).to.equal(true);
   });
 
-  it("Non-owner can't pause the contract", async function () {    
+  it("Non-owner can't pause the contract", async function () {
     await expect(
       collection.connect(user).pause()
     ).to.be.rejectedWith(
@@ -26,10 +26,10 @@ describe("ArttacaERC721Upgradeable pausable", function () {
 
   it("Can't transfer when paused", async function () {
 
-    const royaltiesFee = 1000;
-    const splitShares = 10000;
-    const splits = [[owner.address, splitShares]];
-    const royalties = [splits, royaltiesFee]
+    const royaltiesFee = 10;
+    const splitShares = 100;
+    const splits = [{account: owner.address, shares: splitShares}];
+    const royalties = {splits, percentage: royaltiesFee}
 
     let tx = await collection.mintAndTransferByOwner(owner.address, 0 , '', royalties);
     await tx.wait();
