@@ -48,7 +48,8 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUp
         symbol = _symbol;
     }
 
-    function mintAndTransfer(address _to, uint _tokenId, uint _quantity, string calldata _tokenURI, Ownership.Royalties memory _royalties) override external onlyOwner {
+    function mintAndTransferByOwner(address _to, uint _tokenId, uint _quantity, string calldata _tokenURI, Ownership.Royalties memory _royalties) override external onlyOwner {
+        require(!exists(_tokenId), "ArttacaERC1155Upgradeable::mintAndTransferByOwner: token has already been minted.");
         _mint(_to, _tokenId, _quantity, "");
         _setURI(_tokenId, _tokenURI);
         _setRoyalties(_tokenId, _royalties);
@@ -57,7 +58,7 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUp
     function mintAndTransfer(
         Marketplace.TokenData calldata _tokenData,
         Marketplace.MintData calldata _mintData
-    ) override external onlyOwner {
+    ) override external {
         require(Operatable(factoryAddress).isOperator(msg.sender), "ArttacaERC1155Upgradeable:mintAndTransfer:: Caller is not a valid factory operator.");
         require(block.timestamp <= _mintData.expTimestamp, "ArttacaERC1155Upgradeable:mintAndTransfer:: Signature is expired.");
         require(
@@ -73,8 +74,14 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUp
     }
 
     function uri(uint _tokenId) public view override(ERC1155Upgradeable, ERC1155URIStorageUpgradeable) returns (string memory) {
-        require(exists(_tokenId), "ArttacaERC1155Upgradeable::tokenURI: token has not been minted.");
+        require(exists(_tokenId), "ArttacaERC1155Upgradeable::uri: token has not been minted.");
         return ERC1155URIStorageUpgradeable.uri(_tokenId);
+    }
+
+    // todo: think if we really would accept to change the token uri, we may not need that
+    function setURI(uint _tokenId, string calldata _newTokenURI) onlyOwner external {
+        require(exists(_tokenId), "ArttacaERC1155Upgradeable::setURI: token has not been minted.");
+        _setURI(_tokenId, _newTokenURI);
     }
 
     function pause() public virtual onlyOwner {

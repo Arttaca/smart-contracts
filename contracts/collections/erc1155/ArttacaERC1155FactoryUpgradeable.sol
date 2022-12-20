@@ -3,9 +3,9 @@
 
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 
+import "../../access/OperableUpgradeable.sol";
 import "./ArttacaERC1155Upgradeable.sol";
 import "./ArttacaERC1155Beacon.sol";
 
@@ -13,11 +13,11 @@ import "./ArttacaERC1155Beacon.sol";
  * @title ArttacaERC1155Factory
  * @dev This contract is a factory to create ERC1155 collections.
  */
-contract ArttacaERC1155Factory is Ownable {
+contract ArttacaERC1155FactoryUpgradeable is OperableUpgradeable {
 
     mapping(uint => address) private collections;
     uint public collectionsCount;
-    ArttacaERC1155Beacon immutable beacon;
+    ArttacaERC1155Beacon beacon;
 
     /**
      * @dev Emitted when a new ArttacaERC1155 contract is created.
@@ -30,7 +30,12 @@ contract ArttacaERC1155Factory is Ownable {
         uint royaltyPercentage
     );
 
-    constructor(address _initBlueprint) {
+    function __ArttacaERC1155Factory_initialize(address _initBlueprint) public initializer onlyInitializing {
+        __OperableUpgradeable_init(msg.sender);
+        __ArttacaERC1155Factory_initialize_unchained(_initBlueprint);
+    }
+
+    function __ArttacaERC1155Factory_initialize_unchained(address _initBlueprint) public onlyInitializing {
         beacon = new ArttacaERC1155Beacon(_initBlueprint);
     }
 

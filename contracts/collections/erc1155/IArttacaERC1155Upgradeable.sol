@@ -25,7 +25,7 @@ interface IArttacaERC1155Upgradeable is IERC1155Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(address _to, uint _tokenId, uint _quantity, string calldata _tokenURI, Ownership.Royalties memory _royalties) external;
+    function mintAndTransferByOwner(address _to, uint _tokenId, uint _quantity, string calldata _tokenURI, Ownership.Royalties memory _royalties) external;
 
     /**
      * @dev Allows anyone to mint assets if there's a valid owner signature.
