@@ -1,9 +1,9 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { deployMarketplace } from "./util/fixtures";
-import { getLastBlockTimestamp } from "../common/utils/time";
-import { createMintSignature, createSaleSignature } from "../common/utils/signature";
+import { deployMarketplace } from "../util/fixtures";
+import { getLastBlockTimestamp } from "../../common/utils/time";
+import { createMintSignature, createSaleSignature } from "../../common/utils/signature";
 
 const ONE = BigNumber.from(1)
 
@@ -15,10 +15,10 @@ const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
 let listingSignature, nodeSignature, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
 
-describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
-  let factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2, buyer1;
+describe("ArttacaMarketplaceUpgradeable ERC1155 secondary sales", function () {
+  let erc1155factory, erc1155, owner, user , erc1155collection, marketplace, operator, protocol, minter, split1, split2, buyer1;
   beforeEach(async () => {
-      ({ factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2, buyer1 } = await loadFixture(deployMarketplace));
+      ({ erc1155factory, erc1155, owner, user , erc1155collection, marketplace, operator, protocol, minter, split1, split2, buyer1 } = await loadFixture(deployMarketplace));
       splits = [{account: minter.address, shares: 100}];
       royalties = {splits, percentage: royaltiesFee}
       timestamp = await getLastBlockTimestamp();
@@ -26,11 +26,11 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
       listingExpTimestamp = expTimestamp + 100;
       nodeExpTimestamp = listingExpTimestamp + 100;
 
-      let tx = await collection.transferOwnership(minter.address);
+      let tx = await erc1155collection.transferOwnership(minter.address);
       await tx.wait();
-      tx = await collection.connect(minter).mintAndTransferByOwner(user.address, TOKEN_ID, tokenURI, royalties);
+      tx = await erc1155collection.connect(minter).mintAndTransferByOwner(user.address, TOKEN_ID, ONE, tokenURI, royalties);
       await tx.wait();
-      tx = await collection.connect(user).approve(marketplace.address, TOKEN_ID);
+      tx = await erc1155collection.connect(user).setApprovalForAll(marketplace.address, true);
       await tx.wait();
 
   });
@@ -50,7 +50,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     const buyer1BalanceBefore = await buyer1.getBalance();
 
     listingSignature = await createSaleSignature(
-      collection.address,
+        erc1155collection.address,
       user,
         marketplace.address,
       TOKEN_ID,
@@ -59,7 +59,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
       listingExpTimestamp
     );
     nodeSignature = await createSaleSignature(
-      collection.address,
+        erc1155collection.address,
       operator,
         marketplace.address,
       TOKEN_ID,
@@ -72,7 +72,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     saleData = [ user.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(buyer1).buyAndTransfer(
-      collection.address,
+        erc1155collection.address,
       tokenData,
       saleData,
       {value: PRICE}
@@ -87,10 +87,8 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     const minterBalanceDiff = (await minter.getBalance()).sub(minterBalanceBefore);
     const buyer1BalanceDiff = buyer1BalanceBefore.sub(buyer1BalanceAfter);
 
-    expect(await collection.totalSupply()).to.equal(1);
-    expect((await collection.tokensOfOwner(buyer1.address)).length).to.equal(1);
-    expect((await collection.tokensOfOwner(buyer1.address))[0]).to.equal(TOKEN_ID);
-    expect(await collection.tokenOfOwnerByIndex(buyer1.address, 0)).to.equal(TOKEN_ID);
+    expect(await erc1155collection.totalSupply(TOKEN_ID)).to.equal(1);
+    expect(await erc1155collection.balanceOf(buyer1.address, TOKEN_ID)).to.equal(1);
     expect(protocolBalanceDiff).to.equal(expectedProtocolFee);
     expect(minterBalanceDiff).to.equal(expectedMinterFee);
     expect(userBalanceDiff).to.equal(expectedSellerFee);
@@ -112,7 +110,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     const buyer1BalanceBefore = await buyer1.getBalance();
 
     listingSignature = await createSaleSignature(
-      collection.address,
+        erc1155collection.address,
       user,
         marketplace.address,
       TOKEN_ID,
@@ -121,7 +119,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
       listingExpTimestamp
     );
     nodeSignature = await createSaleSignature(
-      collection.address,
+        erc1155collection.address,
       operator,
         marketplace.address,
       TOKEN_ID,
@@ -134,7 +132,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     saleData = [ user.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(buyer1).buyAndTransfer(
-      collection.address,
+        erc1155collection.address,
       tokenData,
       saleData,
       {value: priceBigNumber.mul(2)} // sending additional funds
@@ -149,10 +147,8 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     const minterBalanceDiff = (await minter.getBalance()).sub(minterBalanceBefore);
     const buyer1BalanceDiff = buyer1BalanceBefore.sub(buyer1BalanceAfter);
 
-    expect(await collection.totalSupply()).to.equal(1);
-    expect((await collection.tokensOfOwner(buyer1.address)).length).to.equal(1);
-    expect((await collection.tokensOfOwner(buyer1.address))[0]).to.equal(TOKEN_ID);
-    expect(await collection.tokenOfOwnerByIndex(buyer1.address, 0)).to.equal(TOKEN_ID);
+    expect(await erc1155collection.totalSupply(TOKEN_ID)).to.equal(1);
+    expect(await erc1155collection.balanceOf(buyer1.address, TOKEN_ID)).to.equal(1);
     expect(protocolBalanceDiff).to.equal(expectedProtocolFee);
     expect(minterBalanceDiff).to.equal(expectedMinterFee);
     expect(userBalanceDiff).to.equal(expectedSellerFee);

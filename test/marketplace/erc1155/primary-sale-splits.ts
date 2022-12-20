@@ -1,9 +1,9 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { deployMarketplace } from "./util/fixtures";
-import { getLastBlockTimestamp } from "../common/utils/time";
-import { createMintSignature, createSaleSignature } from "../common/utils/signature";
+import { deployMarketplace } from "../util/fixtures";
+import { getLastBlockTimestamp } from "../../common/utils/time";
+import { createMintSignature, createSaleSignature } from "../../common/utils/signature";
 
 const ONE = BigNumber.from(1)
 const feeDenominator = 10000;
@@ -17,10 +17,10 @@ const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
 let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
 
-describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
-  let factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2;
+describe("ArttacaMarketplaceUpgradeable ERC1155 primary sale splits", function () {
+  let erc1155factory, erc1155, owner, user , erc1155collection, marketplace, operator, protocol, minter, split1, split2;
   beforeEach(async () => {
-      ({ factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2 } = await loadFixture(deployMarketplace));
+      ({ erc1155factory, erc1155, owner, user , erc1155collection, marketplace, operator, protocol, minter, split1, split2 } = await loadFixture(deployMarketplace));
       splits = [
           {account: minter.address, shares: minterFee},
           {account: split1.address, shares: split1Fee},
@@ -32,7 +32,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
       listingExpTimestamp = expTimestamp + 100;
       nodeExpTimestamp = listingExpTimestamp + 100;
       mintSignature = await createMintSignature(
-        collection.address,
+          erc1155collection.address,
         minter,
         TOKEN_ID,
           ONE,
@@ -41,7 +41,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
         expTimestamp
       );
       listingSignature = await createSaleSignature(
-        collection.address,
+          erc1155collection.address,
         minter,
           marketplace.address,
         TOKEN_ID,
@@ -50,7 +50,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
         listingExpTimestamp
       );
       nodeSignature = await createSaleSignature(
-        collection.address,
+          erc1155collection.address,
         operator,
           marketplace.address,
         TOKEN_ID,
@@ -58,7 +58,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
         PRICE,
         nodeExpTimestamp
       );
-      const tx = await collection.transferOwnership(minter.address)
+      const tx = await erc1155collection.transferOwnership(minter.address)
       await tx.wait()
   });
 
@@ -132,7 +132,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
     saleData = [ minter.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(user).buyAndMint(
-      collection.address,
+        erc1155collection.address,
       tokenData,
       mintData,
       saleData,
@@ -146,10 +146,8 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
     const split1BalanceDiff = (await split1.getBalance()).sub(split1BalanceBefore);
     const split2BalanceDiff = (await split2.getBalance()).sub(split2BalanceBefore);
 
-    expect(await collection.totalSupply()).to.equal(1);
-    expect((await collection.tokensOfOwner(user.address)).length).to.equal(1);
-    expect((await collection.tokensOfOwner(user.address))[0]).to.equal(TOKEN_ID);
-    expect(await collection.tokenOfOwnerByIndex(user.address, 0)).to.equal(TOKEN_ID);
+      expect(await erc1155collection.totalSupply(TOKEN_ID)).to.equal(ONE);
+      expect(await erc1155collection.balanceOf(user.address, TOKEN_ID)).to.equal(ONE);
     expect(protocolBalanceDiff).to.equal(expectedProtocolFee);
     expect(minterBalanceDiff).to.equal(expectedMinterFee);
     expect(split1BalanceDiff).to.equal(expectedSplit1Fee);
@@ -167,7 +165,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
     royalties = {splits: wrongSplits, percentage: royaltiesFee}
 
     mintSignature = await createMintSignature(
-      collection.address,
+        erc1155collection.address,
       minter,
       TOKEN_ID,
         ONE,
@@ -181,15 +179,14 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
 
     await expect(
       marketplace.connect(user).buyAndMint(
-        collection.address,
+          erc1155collection.address,
         tokenData,
         mintData,
         saleData,
         {value: PRICE}
       )
-    ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'AbstractSplits::_setSplits: Total shares should be equal to 100.'");
+    ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'ArttacaERC1155SplitsUpgradeable::_setSplits: Total shares should be equal to 100.'");
 
-    expect(await collection.totalSupply()).to.equal(0);
-    expect((await collection.tokensOfOwner(user.address)).length).to.equal(0);
+      expect(await erc1155collection.exists(TOKEN_ID)).to.equal(false);
   });
 });

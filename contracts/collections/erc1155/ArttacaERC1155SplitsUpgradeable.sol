@@ -40,7 +40,7 @@ abstract contract ArttacaERC1155SplitsUpgradeable is IERC2981Upgradeable, ERC115
     }
 
     function _setRoyalties(uint _tokenId, Ownership.Royalties memory _royalties) internal {
-        require(_checkSplits(_royalties.splits), "ArttacaERC1155SplitsUpgradeable::_setSplits: Total shares should be equal to 10000.");
+        require(_checkSplits(_royalties.splits), "ArttacaERC1155SplitsUpgradeable::_setSplits: Total shares should be equal to 100.");
 
         if (tokenRoyalties[_tokenId].splits.length > 0) delete tokenRoyalties[_tokenId];
         for (uint i; i < _royalties.splits.length; i++) {
