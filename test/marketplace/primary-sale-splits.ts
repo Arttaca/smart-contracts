@@ -5,6 +5,7 @@ import { deployMarketplace } from "./util/fixtures";
 import { getLastBlockTimestamp } from "../common/utils/time";
 import { createMintSignature, createSaleSignature } from "../common/utils/signature";
 
+const ONE = BigNumber.from(1)
 const feeDenominator = 10000;
 const minterFee = 5000;
 const split1Fee = 2500;
@@ -34,6 +35,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
         collection.address,
         minter,
         TOKEN_ID,
+          ONE,
         tokenURI,
         royalties,
         expTimestamp
@@ -43,6 +45,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
         minter,
           marketplace.address,
         TOKEN_ID,
+          ONE,
         PRICE,
         listingExpTimestamp
       );
@@ -51,6 +54,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
         operator,
           marketplace.address,
         TOKEN_ID,
+          ONE,
         PRICE,
         nodeExpTimestamp
       );
@@ -124,8 +128,8 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
     const protocolBalanceBefore = await protocol.getBalance();
 
     tokenData = [ TOKEN_ID, tokenURI, royalties ]
-    mintData = [ user.address, expTimestamp, mintSignature ];
-    saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    mintData = [ user.address, ONE, expTimestamp, mintSignature ];
+    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(user).buyAndMint(
       collection.address,
@@ -166,13 +170,14 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
       collection.address,
       minter,
       TOKEN_ID,
+        ONE,
       tokenURI,
       royalties,
       expTimestamp
     );
     tokenData = [ TOKEN_ID, tokenURI, royalties ]
-    mintData = [ user.address, expTimestamp, mintSignature ];
-    saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    mintData = [ user.address, ONE, expTimestamp, mintSignature ];
+    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     await expect(
       marketplace.connect(user).buyAndMint(

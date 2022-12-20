@@ -41,6 +41,7 @@ abstract contract ArttacaERC721URIStorageUpgradeable is Initializable, ERC721Upg
         return string(abi.encodePacked(baseURI, StringsUpgradeable.toString(tokenId)));
     }
 
+// todo: think if we really would accept to change the token uri, we may not need that
     function setTokenURI(uint _tokenId, string calldata _newTokenURI) onlyOwner external {
         _setTokenURI(_tokenId, _newTokenURI);
     }

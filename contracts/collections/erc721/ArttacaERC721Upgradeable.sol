@@ -9,8 +9,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721Pausab
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 
-import "../../splits/AbstractSplitsUpgradeable.sol";
-import "../../utils/VerifySignature.sol";
+import "./ArttacaERC721SplitsUpgradeable.sol";
 import "./IArttacaERC721Upgradeable.sol";
 import "./ArttacaERC721URIStorageUpgradeable.sol";
 
@@ -22,7 +21,7 @@ interface Operatable {
  * @title ArttacaERC721Upgradeable
  * @dev This contract is an Arttaca ERC721 upgradeable collection.
  */
-contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ArttacaERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, AbstractSplitsUpgradeable, IArttacaERC721Upgradeable, EIP712Upgradeable {
+contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ArttacaERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, ArttacaERC721SplitsUpgradeable, IArttacaERC721Upgradeable, EIP712Upgradeable {
 
     address public factoryAddress;
 
@@ -35,7 +34,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         uint96 _royaltyPct
     ) external initializer {
         __ERC721_init(_name, _symbol);
-        __EIP712_init("Arttaca721", "1");
+        __EIP712_init("Arttaca Collection", "1");
         __Ownable_init();
         __Pausable_init();
         __ERC721Burnable_init();

@@ -5,6 +5,7 @@ import { getLastBlockTimestamp } from "../common/utils/time";
 import { createSaleSignature } from "../common/utils/signature";
 import {BigNumber} from "ethers";
 
+const ONE = BigNumber.from(1)
 const TOKEN_ID = BigNumber.from(3);
 const royaltiesFee = 1000;
 const splitShares = 10000;
@@ -34,6 +35,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
         owner,
         marketplace.address,
         TOKEN_ID,
+          ONE,
         PRICE,
         listingExpTimestamp
       );
@@ -42,11 +44,12 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
         operator,
           marketplace.address,
         TOKEN_ID,
+          ONE,
         PRICE,
         nodeExpTimestamp
       );
 
-      saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+      saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
   });
 
   it("User can buy and transfer", async function () {
@@ -108,11 +111,12 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
       owner,
       marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       expiredTimestamp
     );
 
-    saleData = [ PRICE, expiredTimestamp, nodeExpTimestamp, expiredListingSignature, nodeSignature ];
+    saleData = [ ONE, PRICE, expiredTimestamp, nodeExpTimestamp, expiredListingSignature, nodeSignature ];
 
     await expect(
       marketplace.connect(user).buyAndTransfer(
@@ -136,11 +140,12 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
       user,
         marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       expTimestamp
     );
 
-    saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
+    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
 
     await expect(
       marketplace.connect(user).buyAndTransfer(

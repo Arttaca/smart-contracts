@@ -17,11 +17,13 @@ library Marketplace {
 
     struct MintData {
         address to;
+        uint quantity;
         uint expTimestamp;
         bytes signature;
     }
 
     struct SaleData {
+        uint quantity;
         uint price;
         uint listingExpTimestamp;
         uint nodeExpTimestamp;
@@ -29,7 +31,7 @@ library Marketplace {
         bytes nodeSignature;
     }
 
-    bytes32 public constant MINT721_TYPEHASH = keccak256("Mint721(address collectionAddress,uint id,string tokenURI,Split[] splits,uint96 percentage,uint expTimestamp)Split(address account,uint96 shares)");
+    bytes32 public constant MINT_TYPEHASH = keccak256("Minting(address collectionAddress,uint id,uint quantity,string tokenURI,Split[] splits,uint96 percentage,uint expTimestamp)Split(address account,uint96 shares)");
 
     function hashMint(address collectionAddress, TokenData memory _tokenData, MintData memory _mintData) internal pure returns (bytes32) {
         bytes32[] memory splitBytes = new bytes32[](_tokenData.royalties.splits.length);
@@ -40,9 +42,10 @@ library Marketplace {
 
         return keccak256(
             abi.encode(
-                MINT721_TYPEHASH,
+                MINT_TYPEHASH,
                 collectionAddress,
                 _tokenData.id,
+                _mintData.quantity,
                 keccak256(bytes(_tokenData.URI)),
                 keccak256(abi.encodePacked(splitBytes)),
                 _tokenData.royalties.percentage,
@@ -51,14 +54,15 @@ library Marketplace {
         );
     }
 
-    bytes32 public constant LISTING721_TYPEHASH = keccak256("Listing721(address collectionAddress,uint id,uint price,uint expTimestamp)");
+    bytes32 public constant LISTING_TYPEHASH = keccak256("Listing(address collectionAddress,uint id,uint quantity,uint price,uint expTimestamp)");
 
     function hashListing(address collectionAddress, TokenData memory _tokenData, SaleData memory _saleData, bool isNode) internal pure returns (bytes32) {
         return keccak256(
             abi.encode(
-                LISTING721_TYPEHASH,
+                LISTING_TYPEHASH,
                 collectionAddress,
                 _tokenData.id,
+                _saleData.quantity,
                 _saleData.price,
                 isNode ? _saleData.nodeExpTimestamp : _saleData.listingExpTimestamp
             )

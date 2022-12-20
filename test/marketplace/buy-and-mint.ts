@@ -5,6 +5,7 @@ import { getLastBlockTimestamp } from "../common/utils/time";
 import { createMintSignature, createSaleSignature } from "../common/utils/signature";
 import {BigNumber} from "@ethersproject/bignumber";
 
+const ONE = BigNumber.from(1)
 const feeDenominator = 10000;
 const protocolFee = 300;
 const royaltiesFee = 1000;
@@ -33,6 +34,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
         collection.address,
         owner,
         TOKEN_ID,
+          ONE,
         tokenURI,
         royalties,
         expTimestamp
@@ -42,6 +44,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
         owner,
         marketplace.address,
         TOKEN_ID,
+          ONE,
         PRICE,
         listingExpTimestamp
       );
@@ -50,12 +53,13 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
         operator,
         marketplace.address,
         TOKEN_ID,
+          ONE,
         PRICE,
         nodeExpTimestamp
       );
 
-      mintData = [ user.address, expTimestamp, mintSignature ];
-      saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+      mintData = [ user.address, ONE, expTimestamp, mintSignature ];
+      saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
   });
 
   it("User can buy and mint", async function () {
@@ -109,12 +113,13 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       owner,
         marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       expiredTimestamp
     );
 
-    const wrongExpiredTimeStampSaleData = [ PRICE, expiredTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
-    const wrongListingSignatureSaleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    const wrongExpiredTimeStampSaleData = [ ONE, PRICE, expiredTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    const wrongListingSignatureSaleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     await expect(
       marketplace.connect(user).buyAndMint(
@@ -150,11 +155,12 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       user,
         marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       expTimestamp
     );
 
-    saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
+    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
 
     await expect(
       marketplace.connect(user).buyAndMint(

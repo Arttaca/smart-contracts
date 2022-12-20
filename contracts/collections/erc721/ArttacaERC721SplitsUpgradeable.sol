@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Arttaca Contracts (last updated v1.0.0) (contracts/splits/AbstractSplitsUpgradeable.sol)
+// Arttaca Contracts (last updated v1.0.0) (contracts/collections/erc721/ArttacaERC721SplitsUpgradeable.sol)
 
 pragma solidity ^0.8.4;
 
@@ -8,14 +8,14 @@ import "@openzeppelin/contracts-upgradeable/interfaces/IERC2981Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "../lib/Ownership.sol";
+import "../../lib/Ownership.sol";
 
 /**
  * @title Arttaca AbstractSplitsUpgradeable
  * 
  * @dev Basic splits definition for Arttaca collections.
  */
-abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgradeable, OwnableUpgradeable {
+abstract contract ArttacaERC721SplitsUpgradeable is IERC2981Upgradeable, ERC721Upgradeable, OwnableUpgradeable {
     
     uint96 internal feeNumerator;
     mapping(uint => Ownership.Royalties) internal tokenRoyalties;

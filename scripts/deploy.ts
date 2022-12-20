@@ -1,5 +1,4 @@
-import { ethers } from "hardhat";
-
+import { ethers, upgrades } from "hardhat";
 
 async function main() {
 
@@ -10,7 +9,7 @@ async function main() {
   const erc721 = await ArttacaERC721Upgradeable.deploy();
   await erc721.deployed()
   console.log(`Arttaca ERC721 collection for beacon has been deployed at ${erc721.address}`);
-  
+
   const factory = await upgrades.deployProxy(ArttacaERC721FactoryUpgradeable, [erc721.address], { initializer: '__ArttacaERC721Factory_initialize' });
 
   await factory.deployed()
@@ -29,7 +28,7 @@ async function main() {
 
   tx = await factory.addOperator(marketplace.address);
   await tx.wait();
-  
+
   console.log('added marketplace as operator in the factory');
 
   console.log(`Deployment script executed successfully.`);

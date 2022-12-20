@@ -6,6 +6,7 @@ import { createMintSignature } from "../../common/utils/signature";
 import { getLastBlockTimestamp } from "../../common/utils/time";
 
 describe("ArttacaERC721Upgradeable minting", function () {
+  const ONE = BigNumber.from(1)
   let collection, owner, user, factory, splits, royalties;
   const TOKEN_ID = BigNumber.from(3);
   const tokenURI = 'ipfs://123123';
@@ -44,6 +45,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 	    collection.address,
       owner,
       TOKEN_ID,
+          ONE,
       tokenURI,
       royalties,
       expTimestamp
@@ -57,6 +59,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
     const mintData = [
       user.address,
+      ONE,
       expTimestamp,
       mintSignature
     ]
@@ -83,6 +86,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 	    collection.address,
       owner,
       TOKEN_ID,
+          ONE,
       tokenURI,
       royalties,
       expTimestamp
@@ -96,6 +100,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
     const mintData = [
       user.address,
+      ONE,
       expTimestamp,
       wrongMintSignature
     ]
@@ -118,6 +123,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 	    collection.address,
       owner,
       TOKEN_ID,
+          ONE,
       tokenURI,
       royalties,
       pastExpTimestamp // time is before timestamp
@@ -131,6 +137,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
     const mintData = [
       user.address,
+      ONE,
       pastExpTimestamp,
       expiredMintSignature
     ]

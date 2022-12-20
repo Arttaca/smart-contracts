@@ -6,18 +6,20 @@ const Split = [
     { name: 'shares', type: 'uint96' },
 ]
 
-const Mint721 = [
+const Minting = [
     { name: 'collectionAddress', type: 'address' },
     { name: 'id', type: 'uint' },
+    { name: 'quantity', type: 'uint' },
     { name: 'tokenURI', type: 'string' },
     { name: 'splits', type: 'Split[]'},
     { name: 'percentage', type: 'uint96' },
     { name: 'expTimestamp', type: 'uint' }
 ]
 
-const Listing721 = [
+const Listing = [
     { name: 'collectionAddress', type: 'address' },
     { name: 'id', type: 'uint' },
+    { name: 'quantity', type: 'uint' },
     { name: 'price', type: 'uint' },
     { name: 'expTimestamp', type: 'uint'},
 ]
@@ -26,6 +28,7 @@ async function createMintSignature(
     contractAddress: string,
     signer: SignerWithAddress,
     tokenId: BigNumber,
+    quantity: BigNumber,
     tokenURI: string,
     royalties: any,
     expTimestamp: number
@@ -33,6 +36,7 @@ async function createMintSignature(
     const message = {
         collectionAddress: contractAddress,
         id: tokenId,
+        quantity,
         tokenURI,
         splits: royalties.splits,
         percentage: royalties.percentage,
@@ -42,10 +46,10 @@ async function createMintSignature(
     const data = {
         types: {
             Split,
-            Mint721
+            Minting
         },
-        domain: { name: 'Arttaca721', version: '1', chainId: 31337, verifyingContract: contractAddress },
-        primaryType: 'Mint721',
+        domain: { name: 'Arttaca Collection', version: '1', chainId: 31337, verifyingContract: contractAddress },
+        primaryType: 'Minting',
         message,
     };
     return signer._signTypedData(data.domain, data.types, data.message)
@@ -54,22 +58,24 @@ async function createMintSignature(
 async function createSaleSignature(
     collectionAddress: string,
     signer: SignerWithAddress,
-    contractAddress: string,
+    marketplaceAddress: string,
     tokenId: BigNumber,
+    quantity: BigNumber,
     price: string,
     expirationTimestamp: number
 ): Promise<string> {
     const message = {
         collectionAddress,
         id: tokenId,
+        quantity,
         price,
         expTimestamp: expirationTimestamp
     };
 
     const data = {
-        types: { Listing721 },
-        domain: { name: 'Arttaca Marketplace', version: '1', chainId: 31337, verifyingContract: contractAddress },
-        primaryType: 'Listing721',
+        types: { Listing },
+        domain: { name: 'Arttaca Marketplace', version: '1', chainId: 31337, verifyingContract: marketplaceAddress },
+        primaryType: 'Listing',
         message,
     };
 

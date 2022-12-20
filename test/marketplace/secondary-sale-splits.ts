@@ -5,17 +5,18 @@ import { deployMarketplace } from "./util/fixtures";
 import { getLastBlockTimestamp } from "../common/utils/time";
 import { createMintSignature, createSaleSignature } from "../common/utils/signature";
 
+const ONE = BigNumber.from(1)
+
 const feeDenominator = 10000;
 const minterFee = 5000;
 const split1Fee = 2500;
 const split2Fee = 2500;
 const protocolFee = 300;
 const royaltiesFee = 1000; // 10%
-const emptyRoyalties = [[], 0];
 const TOKEN_ID =  BigNumber.from(3);
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
-let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
+let listingSignature, nodeSignature, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
 
 describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
   let factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2, buyer1;
@@ -56,6 +57,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
       user,
         marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       listingExpTimestamp
     );
@@ -64,12 +66,13 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
       operator,
         marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       nodeExpTimestamp
     );
 
-    tokenData = [ TOKEN_ID, tokenURI, emptyRoyalties ]
-    saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    tokenData = [ TOKEN_ID, tokenURI, royalties ]
+    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(buyer1).buyAndTransfer(
       collection.address,
@@ -116,6 +119,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
       user,
         marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       listingExpTimestamp
     );
@@ -124,12 +128,13 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
       operator,
         marketplace.address,
       TOKEN_ID,
+        ONE,
       PRICE,
       nodeExpTimestamp
     );
 
-    tokenData = [ TOKEN_ID, tokenURI, emptyRoyalties ]
-    saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    tokenData = [ TOKEN_ID, tokenURI, royalties ]
+    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(buyer1).buyAndTransfer(
       collection.address,

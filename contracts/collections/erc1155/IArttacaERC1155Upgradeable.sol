@@ -4,6 +4,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
+import "../../lib/Marketplace.sol";
 
 /**
  * @title Arttaca ERC1155 interface, standard for Arttaca NFT collections.
@@ -24,7 +25,7 @@ interface IArttacaERC1155Upgradeable is IERC1155Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(address _to, uint _tokenId, uint _quantity, bytes calldata _data) external;
+    function mintAndTransfer(address _to, uint _tokenId, uint _quantity, string calldata _tokenURI, Ownership.Royalties memory _royalties) external;
 
     /**
      * @dev Allows anyone to mint assets if there's a valid owner signature.
@@ -37,5 +38,5 @@ interface IArttacaERC1155Upgradeable is IERC1155Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(address _to, uint _tokenId, uint _quantity, bytes calldata _mintData, bytes calldata _data) external;
+    function mintAndTransfer(Marketplace.TokenData calldata _tokenData, Marketplace.MintData calldata _mintData) external;
 }
