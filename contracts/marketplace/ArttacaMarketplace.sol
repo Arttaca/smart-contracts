@@ -4,21 +4,30 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "../access/OperableUpgradeable.sol";
 import "../lib/Marketplace.sol";
 import "../utils/VerifySignature.sol";
+import "../collections/erc1155/IArttacaERC1155Upgradeable.sol";
 
-interface ERC721 {
+interface ArttacaCollection {
     function mintAndTransfer(Marketplace.TokenData calldata _tokenData, Marketplace.MintData calldata _mintData) external;
-    function safeTransferFrom(address from, address to, uint256 tokenId) external;
     function owner() external returns (address);
-    function ownerOf(uint) external returns (address);
     function getBaseRoyalty() external returns (Ownership.Split memory);
     function getRoyalties(uint tokenId) external returns (Ownership.Royalties memory);
+    function supportsInterface(bytes4 interfaceId) external view virtual returns (bool);
+}
+
+interface ERC721 is ArttacaCollection {
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
+    function ownerOf(uint) external returns (address);
+}
+
+interface ERC1155 is ArttacaCollection{
+    function safeTransferFrom(address from, address to, uint256 tokenId, uint256 quantity, bytes memory data) external;
+    function balanceOf(address, uint) external returns (address);
 }
 
 /**
@@ -51,9 +60,9 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         require(!paused(), "ArttacaMarketplaceUpgradeable::buyAndMint: cannot mint and buy while is paused.");
         require(msg.value >= _saleData.price, "ArttacaMarketplaceUpgradeable::buyAndMint: Value sent is insufficient.");
 
-        ERC721 collection = ERC721(collectionAddress);
+        ArttacaCollection collection = ArttacaCollection(collectionAddress);
 
-        _verifySaleSignatures(_tokenData, _saleData, collectionAddress, collection.owner());
+        _verifySaleSignatures(_tokenData, _saleData, collectionAddress);
 
         uint saleProceedingsToSend = _saleData.price - _takeProtocolFee(_saleData.price);
 
@@ -74,24 +83,27 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         require(block.timestamp <= _saleData.listingExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is probably expired.");
         require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
 
-        ERC721 collection = ERC721(collectionAddress);
-        address tokenOwner = collection.ownerOf(_tokenData.id);
+        ArttacaCollection collection = ArttacaCollection(collectionAddress);
 
-        _verifySaleSignatures(_tokenData, _saleData, collectionAddress, tokenOwner);
+        _verifySaleSignatures(_tokenData, _saleData, collectionAddress);
 
         uint saleProceedingsToSend = _saleData.price;
         saleProceedingsToSend -= _takeProtocolFee(_saleData.price);
 
         Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
-        if (!(royalties.splits[0].account == tokenOwner && royalties.splits.length == 1)) {
+        if (!(royalties.splits[0].account == _saleData.lister && royalties.splits.length == 1)) {
             uint royaltyAmount = (saleProceedingsToSend * royalties.percentage * 100) / _feeDenominator();
             _distributeSplits(royalties.splits, royaltyAmount);
             saleProceedingsToSend -= royaltyAmount;
         }
 
-        AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
+        AddressUpgradeable.sendValue(payable(_saleData.lister), saleProceedingsToSend);
 
-        collection.safeTransferFrom(tokenOwner, msg.sender, _tokenData.id);
+        if (collection.supportsInterface(type(IArttacaERC1155Upgradeable).interfaceId)) {
+            ERC1155(collectionAddress).safeTransferFrom(_saleData.lister, msg.sender, _tokenData.id, _saleData.quantity, "");
+        } else {
+            ERC721(collectionAddress).safeTransferFrom(_saleData.lister, msg.sender, _tokenData.id);
+        }
     }
 
     function _takeProtocolFee(uint _price) internal returns (uint protocolFeeAmount) {
@@ -122,8 +134,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     function _verifySaleSignatures(
         Marketplace.TokenData calldata _tokenData,
         Marketplace.SaleData calldata _saleData,
-        address collectionAddress,
-        address listingSigner
+        address collectionAddress
     ) internal view {
         require(block.timestamp <= _saleData.listingExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is probably expired.");
         require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
@@ -132,7 +143,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
             ECDSAUpgradeable.recover(
                 _hashTypedDataV4(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, false)),
                 _saleData.listingSignature
-            ) == listingSigner,
+            ) == _saleData.lister,
             "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is not valid."
         );
 

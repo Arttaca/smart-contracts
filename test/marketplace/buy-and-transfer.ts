@@ -49,7 +49,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
         nodeExpTimestamp
       );
 
-      saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+      saleData = [ owner.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
   });
 
   it("User can buy and transfer", async function () {
@@ -116,7 +116,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
       expiredTimestamp
     );
 
-    saleData = [ ONE, PRICE, expiredTimestamp, nodeExpTimestamp, expiredListingSignature, nodeSignature ];
+    saleData = [ owner.address, ONE, PRICE, expiredTimestamp, nodeExpTimestamp, expiredListingSignature, nodeSignature ];
 
     await expect(
       marketplace.connect(user).buyAndTransfer(
@@ -145,7 +145,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
       expTimestamp
     );
 
-    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
+    saleData = [ owner.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
 
     await expect(
       marketplace.connect(user).buyAndTransfer(

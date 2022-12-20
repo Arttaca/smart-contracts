@@ -129,7 +129,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
 
     tokenData = [ TOKEN_ID, tokenURI, royalties ]
     mintData = [ user.address, ONE, expTimestamp, mintSignature ];
-    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    saleData = [ minter.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(user).buyAndMint(
       collection.address,
@@ -177,7 +177,7 @@ describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
     );
     tokenData = [ TOKEN_ID, tokenURI, royalties ]
     mintData = [ user.address, ONE, expTimestamp, mintSignature ];
-    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    saleData = [ minter.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     await expect(
       marketplace.connect(user).buyAndMint(

@@ -69,7 +69,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     );
 
     tokenData = [ TOKEN_ID, tokenURI, royalties ]
-    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    saleData = [ user.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(buyer1).buyAndTransfer(
       collection.address,
@@ -131,7 +131,7 @@ describe("ArttacaMarketplaceUpgradeable secondary sales", function () {
     );
 
     tokenData = [ TOKEN_ID, tokenURI, royalties ]
-    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    saleData = [ user.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     const tx = await marketplace.connect(buyer1).buyAndTransfer(
       collection.address,

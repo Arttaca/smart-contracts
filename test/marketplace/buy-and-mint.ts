@@ -57,7 +57,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       );
 
       mintData = [ user.address, ONE, expTimestamp, mintSignature ];
-      saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+      saleData = [ owner.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
   });
 
   it("User can buy and mint", async function () {
@@ -108,8 +108,8 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       expiredTimestamp
     );
 
-    const wrongExpiredTimeStampSaleData = [ ONE, PRICE, expiredTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
-    const wrongListingSignatureSaleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    const wrongExpiredTimeStampSaleData = [ owner.address, ONE, PRICE, expiredTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+    const wrongListingSignatureSaleData = [ owner.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
     await expect(
       marketplace.connect(user).buyAndMint(
@@ -150,7 +150,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       expTimestamp
     );
 
-    saleData = [ ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
+    saleData = [ owner.address, ONE, PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, wrongOperatorSignature ];
 
     await expect(
       marketplace.connect(user).buyAndMint(

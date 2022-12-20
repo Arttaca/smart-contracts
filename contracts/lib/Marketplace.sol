@@ -23,6 +23,7 @@ library Marketplace {
     }
 
     struct SaleData {
+        address lister;
         uint quantity;
         uint price;
         uint listingExpTimestamp;
