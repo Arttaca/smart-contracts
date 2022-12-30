@@ -45,7 +45,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
      */
     event SaleExecuted(
         address indexed _collectionAddress,
-        address indexed _nftId,
+        uint indexed _nftId,
         uint _quantity,
         address _seller,
         address _buyer,

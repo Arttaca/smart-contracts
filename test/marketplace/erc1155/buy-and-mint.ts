@@ -62,14 +62,21 @@ describe("ArttacaMarketplaceUpgradeable ERC1155 buy and mint", function () {
 
   it("User can buy and mint", async function () {
 
-    const tx = await marketplace.connect(user).buyAndMint(
+    await expect(marketplace.connect(user).buyAndMint(
         erc1155collection.address,
       tokenData,
       mintData,
       saleData,
       {value: PRICE}
-    );
-    await tx.wait();
+    )).to.emit(marketplace, "SaleExecuted")
+        .withArgs(
+            erc1155collection.address,
+            TOKEN_ID,
+            ONE,
+            owner.address,
+            user.address,
+            PRICE.toString()
+        )
     expect(await erc1155collection.totalSupply(TOKEN_ID)).to.equal(1);
   });
 
