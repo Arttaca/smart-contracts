@@ -40,7 +40,7 @@ describe("ArttacaERC1155Upgradeable pausable", function () {
     await expect(
       collection.connect(owner).safeTransferFrom(owner.address, user.address, 0, 1, [])
     ).to.be.rejectedWith(
-      "VM Exception while processing transaction: reverted with reason string 'ERC1155Pausable: token transfer while paused'"
+      "VM Exception while processing transaction: reverted with reason string 'ArttacaERC1155Upgradeable::_beforeTokenTransfer: token transfer while paused'"
     );
   });
 });

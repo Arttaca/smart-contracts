@@ -27,7 +27,8 @@ contract ArttacaERC1155FactoryUpgradeable is OperableUpgradeable {
         address indexed owner,
         string name,
         string symbol,
-        uint royaltyPercentage
+        uint royaltyPercentage,
+        string contractURI
     );
 
     function __ArttacaERC1155Factory_initialize(address _initBlueprint) public initializer onlyInitializing {
@@ -42,7 +43,8 @@ contract ArttacaERC1155FactoryUpgradeable is OperableUpgradeable {
     function createCollection(
         string memory _name,
         string memory _symbol,
-        uint royaltyPercentage
+        uint _royaltyPercentage,
+        string memory _contractURI
     ) external onlyOwner returns (address) {
 
         BeaconProxy collection = new BeaconProxy(
@@ -53,7 +55,8 @@ contract ArttacaERC1155FactoryUpgradeable is OperableUpgradeable {
                 msg.sender,
                 _name,
                 _symbol,
-                royaltyPercentage
+                _royaltyPercentage,
+                _contractURI
             )
         );
         address newCollectionAddress = address(collection);
@@ -65,7 +68,8 @@ contract ArttacaERC1155FactoryUpgradeable is OperableUpgradeable {
             _msgSender(),
             _name,
             _symbol,
-            royaltyPercentage
+            _royaltyPercentage,
+            _contractURI
         );
 
         return newCollectionAddress;

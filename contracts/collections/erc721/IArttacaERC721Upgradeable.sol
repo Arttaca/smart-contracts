@@ -14,6 +14,16 @@ import "../../lib/Marketplace.sol";
  */
 interface IArttacaERC721Upgradeable is IERC721Upgradeable {
 
+    struct TokenInformation {
+        address owner;
+        string tokenURI;
+        Ownership.Royalties royalties;
+    }
+
+    function factoryAddress() external view returns (address);
+
+    function contractURI() external view returns (string memory);
+
     /**
      * @dev Allows Owner to mint new assets in the collection.
      *
@@ -39,4 +49,15 @@ interface IArttacaERC721Upgradeable is IERC721Upgradeable {
      * Emits a {Transfer} event for every new asset minted.
      */
     function mintAndTransfer(Marketplace.TokenData calldata _tokenData, Marketplace.MintData calldata _mintData) external;
+
+    /**
+     * @dev Get information about the token.
+     *
+     * Requirements:
+     *
+     * - The value '_tokenId' a valid & minted token id
+     *
+     * Returns a `TokenInformation` instance.
+     */
+    function getTokenInformation(uint _tokenId) external view returns (TokenInformation memory tokenInformation);
 }

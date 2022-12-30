@@ -22,12 +22,12 @@ async function deployCollectionFactory() {
 async function deployCollection() {
   const { erc721factory, erc1155factory, erc721, erc1155, owner, user, operator, protocol, minter, split1, split2, buyer1 } = await deployCollectionFactory();
 
-  let tx = await erc721factory.createCollection('Arttaca Test', 'ARTTT', 'https://api.arttaca.io/v1/assets/', 5)
+  let tx = await erc721factory.createCollection('Arttaca Test', 'ARTTT', 'https://api.arttaca.io/v1/assets/', 5, 'https://api.arttaca.io/v1/collections/blabla')
   await tx.wait();
   const newErc721CollectionAddress = await erc721factory.getCollectionAddress(0);
   const erc721collection = await ethers.getContractAt('ArttacaERC721Upgradeable', newErc721CollectionAddress, owner)
 
-  tx = await erc1155factory.createCollection('Arttaca Test', 'ARTTT', 5)
+  tx = await erc1155factory.createCollection('Arttaca Test', 'ARTTT', 5, 'https://api.arttaca.io/v1/collections/blabla')
   await tx.wait();
   const newErc1155CollectionAddress = await erc1155factory.getCollectionAddress(0);
   const erc1155collection = await ethers.getContractAt('ArttacaERC1155Upgradeable', newErc1155CollectionAddress, owner)

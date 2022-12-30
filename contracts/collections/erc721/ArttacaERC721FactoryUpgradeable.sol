@@ -23,12 +23,13 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
      * @dev Emitted when a new ArttacaERC721 contract is created.
      */
     event Arrtaca721Created(
-        address indexed collectionAddress,
-        address indexed owner,
-        string name,
-        string indexed symbol,
-        string baseURI,
-        uint96 _royaltyPercentage
+        address indexed _collectionAddress,
+        address indexed _owner,
+        string _name,
+        string _symbol,
+        string _baseURI,
+        uint96 _royaltyPercentage,
+        string _contractURI
     );
 
     function __ArttacaERC721Factory_initialize(address _initBlueprint) public initializer onlyInitializing {
@@ -44,7 +45,8 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
         string memory _name,
         string memory _symbol,
         string memory _baseURI,
-        uint96 _royaltyPercentage
+        uint96 _royaltyPercentage,
+        string memory _contractURI
     ) external returns (address) {
 
         BeaconProxy collection = new BeaconProxy(
@@ -55,8 +57,9 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
                 msg.sender,
                 _name,
                 _symbol,
-                _baseURI, 
-                _royaltyPercentage
+                _baseURI,
+                _royaltyPercentage,
+                _contractURI
             )
         );
         address newCollectionAddress = address(collection);
@@ -69,7 +72,8 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
             _name,
             _symbol,
             _baseURI,
-            _royaltyPercentage
+            _royaltyPercentage,
+            _contractURI
         );
 
         return newCollectionAddress;

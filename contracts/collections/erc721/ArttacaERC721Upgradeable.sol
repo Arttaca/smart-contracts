@@ -23,7 +23,11 @@ interface Operatable {
  */
 contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ArttacaERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, ArttacaERC721SplitsUpgradeable, IArttacaERC721Upgradeable, EIP712Upgradeable {
 
-    address public factoryAddress;
+    // @dev Factory address
+    address public override factoryAddress;
+
+    // @dev Contract metadata URI
+    string public override contractURI;
 
     function __ArttacaERC721_initialize(
         address _factoryAddress,
@@ -31,7 +35,8 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721BurnableUpgradeab
         string memory _name,
         string memory _symbol,
         string memory baseURI_,
-        uint96 _royaltyPct
+        uint96 _royaltyPct,
+        string memory _contractURI
     ) external initializer {
         __ERC721_init(_name, _symbol);
         __EIP712_init("Arttaca Collection", "1");
@@ -43,6 +48,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721BurnableUpgradeab
         _transferOwnership(_owner);
 
         factoryAddress = _factoryAddress;
+        contractURI = _contractURI;
     }
 
     function mintAndTransferByOwner(address _to, uint _tokenId, string calldata _tokenURI, Ownership.Royalties memory _royalties) override external onlyOwner {
@@ -101,13 +107,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721BurnableUpgradeab
         return ArttacaERC721URIStorageUpgradeable.tokenURI(_tokenId);
     }
 
-    struct TokenInformation {
-        address owner;
-        string tokenURI;
-        Ownership.Royalties royalties;
-    }
-
-    function getTokenInformation(uint _tokenId) external view returns (TokenInformation memory tokenInformation) {
+    function getTokenInformation(uint _tokenId) external view override returns (TokenInformation memory tokenInformation) {
         require(_exists(_tokenId), "ArttacaERC721Upgradeable::getTokenInformation: token has not been minted.");
         return TokenInformation({
             owner: ownerOf(_tokenId),
@@ -136,5 +136,5 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721BurnableUpgradeab
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    uint256[50] private __gap;
+    uint256[49] private __gap;
 }

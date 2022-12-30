@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
-// Arttaca Contracts (last updated v1.0.0) (collections/erc721/ArttacaERC1155Upgradeable.sol)
+// Arttaca Contracts (last updated v1.0.0) (collections/erc1155/ArttacaERC1155Upgradeable.sol)
 
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 
 import "./ArttacaERC1155SplitsUpgradeable.sol";
+import "./ArttacaERC1155URIStorageUpgradeable.sol";
 import "./IArttacaERC1155Upgradeable.sol";
 
 interface Operatable {
@@ -21,18 +21,27 @@ interface Operatable {
  * @title ArttacaERC1155Upgradeable
  * @dev This contract is an Arttaca ERC1155 upgradeable collection.
  */
-contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUpgradeable, ERC1155BurnableUpgradeable, ERC1155PausableUpgradeable, ERC1155URIStorageUpgradeable, IArttacaERC1155Upgradeable, EIP712Upgradeable {
+contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUpgradeable, ERC1155BurnableUpgradeable, PausableUpgradeable, ArttacaERC1155URIStorageUpgradeable, IArttacaERC1155Upgradeable, EIP712Upgradeable {
 
-    address public factoryAddress;
-    string public name;
-    string public symbol;
+    // @dev the references to the factory address that deploy it
+    address public override factoryAddress;
+
+    // @dev the name of the token
+    string public override name;
+
+    // @dev the symbol of the token
+    string public override symbol;
+
+    // @dev Contract metadata URI
+    string public override contractURI;
 
     function __ArttacaERC1155_initialize(
         address _factoryAddress,
         address _owner,
         string memory _name,
         string memory _symbol,
-        uint96 _royaltyPct
+        uint96 _royaltyPct,
+        string memory _contractURI
     ) public initializer {
         __ERC1155_init("");
         __Ownable_init();
@@ -46,6 +55,7 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUp
         factoryAddress = _factoryAddress;
         name = _name;
         symbol = _symbol;
+        contractURI = _contractURI;
     }
 
     function mintAndTransferByOwner(address _to, uint _tokenId, uint _quantity, string calldata _tokenURI, Ownership.Royalties memory _royalties) override external onlyOwner {
@@ -73,9 +83,22 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUp
         _setRoyalties(_tokenData.id, _tokenData.royalties);
     }
 
-    function uri(uint _tokenId) public view override(ERC1155Upgradeable, ERC1155URIStorageUpgradeable) returns (string memory) {
+    function getTokenInformation(
+        uint _tokenId,
+        address _holder
+    ) external view override returns (TokenInformation memory tokenInformation) {
+        require(exists(_tokenId), "ArttacaERC1155Upgradeable::getTokenInformation: token has not been minted.");
+        return TokenInformation({
+            quantity: _holder == address(0) ? 0 : balanceOf(_holder, _tokenId),
+            totalSupply: totalSupply(_tokenId),
+            uri: uri(_tokenId),
+            royalties: getRoyalties(_tokenId)
+        });
+    }
+
+    function uri(uint _tokenId) public view override(ERC1155Upgradeable, ArttacaERC1155URIStorageUpgradeable) returns (string memory) {
         require(exists(_tokenId), "ArttacaERC1155Upgradeable::uri: token has not been minted.");
-        return ERC1155URIStorageUpgradeable.uri(_tokenId);
+        return ArttacaERC1155URIStorageUpgradeable.uri(_tokenId);
     }
 
     // todo: think if we really would accept to change the token uri, we may not need that
@@ -106,8 +129,9 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, ArttacaERC1155SplitsUp
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal virtual override(ERC1155Upgradeable, ERC1155SupplyUpgradeable, ERC1155PausableUpgradeable) {
+    ) internal virtual override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+        require(!paused(), "ArttacaERC1155Upgradeable::_beforeTokenTransfer: token transfer while paused");
     }
 
     uint256[50] private __gap;

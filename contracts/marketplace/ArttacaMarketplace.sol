@@ -40,6 +40,18 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     // @dev Recipient of protocol fees.
     Ownership.Split protocolFee;
 
+    /**
+    * @dev Emitted every successful sale.
+     */
+    event SaleExecuted(
+        address indexed _collectionAddress,
+        address indexed _nftId,
+        uint _quantity,
+        address _seller,
+        address _buyer,
+        uint _price
+    );
+
     function __ArttacaMarketplace_init(
         address owner,
         Ownership.Split memory _protocolFee
@@ -70,6 +82,15 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         _distributeSplits(royalties.splits, saleProceedingsToSend);
 
         collection.mintAndTransfer(_tokenData, _mintData);
+
+        emit SaleExecuted(
+            collectionAddress,
+            _tokenData.id,
+            _saleData.quantity,
+            _saleData.lister,
+            _mintData.to,
+            _saleData.price
+        );
     }
 
     function buyAndTransfer(
@@ -104,6 +125,15 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         } else {
             ERC721(collectionAddress).safeTransferFrom(_saleData.lister, msg.sender, _tokenData.id);
         }
+
+        emit SaleExecuted(
+            collectionAddress,
+            _tokenData.id,
+            _saleData.quantity,
+            _saleData.lister,
+            msg.sender,
+            _saleData.price
+        );
     }
 
     function _takeProtocolFee(uint _price) internal returns (uint protocolFeeAmount) {
